@@ -11,8 +11,10 @@ object Main {
     Option(System.getenv("HISTFILE")).foreach(History.readFile)
 
     val reader = new BufferedReader(new InputStreamReader(System.in))
-    val out = new java.io.PrintStream(System.out)
-    System.setOut(out)
+    // Use the existing System.out rather than wrapping/replacing it. Replacing
+    // System.out can introduce buffering differences between stdout and stderr
+    // that affect test harness ordering. Use System.out directly for consistency.
+    val out = System.out
 
     while (true) {
       print(Prompt)
