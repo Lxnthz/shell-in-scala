@@ -34,7 +34,14 @@ object Executor {
       val f = new File(cmd)
       if (f.exists() && f.canExecute()) Some(f.getAbsolutePath) else None
     } else {
-      Builtins.findInPath(cmd)
+      // If the command exists somewhere on PATH, return the command name
+      // (not the absolute path) so that the spawned process receives the
+      // original argv[0] value (e.g. "custom_exe_3037") instead of a
+      // full path like "/tmp/owl/custom_exe_3037".
+      Builtins.findInPath(cmd) match {
+        case Some(_) => Some(cmd)
+        case None    => None
+      }
     }
   }
 

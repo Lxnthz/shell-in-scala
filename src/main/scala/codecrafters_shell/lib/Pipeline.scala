@@ -87,12 +87,10 @@ object Pipeline {
 
   private def buildProcessBuilder(cleanArgs: List[String]): ProcessBuilder = {
     val executable = cleanArgs.headOption.getOrElse("")
-    val resolvedArgs =
-      if (executable.isEmpty || executable.contains(File.separator)) cleanArgs
-      else Builtins.findInPath(executable) match {
-        case Some(p) => p :: cleanArgs.tail
-        case None    => cleanArgs
-      }
+    // Preserve the original `cleanArgs` so the first element (argv[0]) remains
+    // the name as invoked (not replaced with an absolute path). This ensures
+    // external programs receive the same program-name value the tester expects.
+    val resolvedArgs = cleanArgs
     val jl = new java.util.ArrayList[String](resolvedArgs.size)
     resolvedArgs.foreach(jl.add)
     val pb = new ProcessBuilder(jl)
