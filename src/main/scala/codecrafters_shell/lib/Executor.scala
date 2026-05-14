@@ -24,6 +24,17 @@ object Executor {
       }
       case None => pb.redirectOutput(ProcessBuilder.Redirect.INHERIT)
     }
+    // stderr handling: mirror Pipeline.runPipeline behavior so that stderr
+    // is inherited by default or redirected to a file when requested.
+    spec.stderrFile match {
+      case Some(path) =>
+        val f = new File(path)
+        pb.redirectError(
+          if (spec.stderrAppend) ProcessBuilder.Redirect.appendTo(f)
+          else ProcessBuilder.Redirect.to(f)
+        )
+      case None => pb.redirectError(ProcessBuilder.Redirect.INHERIT)
+    }
     val process = pb.start()
     process.waitFor()
   } 
