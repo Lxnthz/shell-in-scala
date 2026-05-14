@@ -1,6 +1,4 @@
-package codecrafters_shell
-package lib
-package shell
+package codecrafters_shell.lib
 
 import java.io.{File, PrintStream}
 import java.nio.file.{Files, Paths}
@@ -39,7 +37,7 @@ object Builtins {
   }
 
   // `cd` -----------------------------------------------------------------------------
-  private def runCd(args: List[String], errOut: PrintStream): Int = {
+  private def runCd(args: List[String], out: PrintStream, errOut: PrintStream): Int = {
     val target = args.headOption match {
       case None | Some("~") => Option(System.getenv("HOME")).getOrElse {
         errOut.println("cd: HOME environment variable not set")
@@ -113,11 +111,12 @@ object Builtins {
   }
 
   // `exit` ----------------------------------------------------------------------------
-  private def runExit(args: List[String]): Option[Int] = {
+  private def runExit(args: List[String]): Int = {
     // Persist history before leaving
     Option(System.getenv("HISTFILE")).foreach(History.writeFile)
     val code = args.headOption.flatMap(s => scala.util.Try(s.toInt).toOption).getOrElse(0)
     sys.exit(code)
+    code
   }
 
   // Helpers ---------------------------------------------------------------------------

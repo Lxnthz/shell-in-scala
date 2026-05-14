@@ -1,6 +1,4 @@
-package codecrafters_shell
-package lib
-package shell
+package codecrafters_shell.lib
 
 import java.io.{File, FileOutputStream, PrintStream}
 
@@ -48,7 +46,7 @@ object Redirects {
     * Helpers
   **/
 
-  private def nextArg(args: List[String], i: Int): Option[String] = {
+  private def nextArg(i: Int, args: List[String]): Option[String] = {
     if (i + 1 < args.length) Some(args(i + 1)) else None
   }
 }

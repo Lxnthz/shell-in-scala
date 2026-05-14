@@ -1,6 +1,4 @@
-package codecrafters_shell
-package shell
-package lib
+package codecrafters_shell.lib
 
 object Parser {
   case class ParsedCommand(args: List[String])
@@ -37,7 +35,7 @@ object Parser {
           if (i < input.length) {
             val nextChar = input(i)
             if (inDoubleQuotes) {
-              // * Inside double quotes only \" and \\ are treated as escape sequences
+              // * Inside double quotes only \" and \\\\ are treated as escape sequences
               if (nextChar == '"' || nextChar == '\\') {
                 curr += nextChar
               } else {
@@ -47,7 +45,8 @@ object Parser {
             } else {
               curr += nextChar
             }
-          } i += 1
+          }
+          i += 1
         }
 
         // * Single quote toggle

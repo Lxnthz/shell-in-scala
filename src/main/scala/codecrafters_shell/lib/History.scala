@@ -1,8 +1,6 @@
-package codecrafters_shell
-package lib
-package shell
+package codecrafters_shell.lib
 
-import java.io.{File, FileOutputStream, PrintStream}
+import java.io.{File, FileOutputStream, PrintWriter}
 import scala.io.Source
 import scala.collection.mutable.ArrayBuffer
 
@@ -40,21 +38,22 @@ object History {
 
   // Overwrite `path` with the entire in-memory history
   def writeFile(path: String): Unit = {
-    withWriter(path, append = false) pw => entries.foreach(pw.println)
+    withWriter(path, append = false) { pw => entries.foreach(pw.println) }
   }
 
   // Append only the new entries (since last append) to `path`.
   def appendFile(path: String): Unit = {
     val newEntries = entries.drop(appendBaseIndex)
     if (newEntries.nonEmpty) {
-      withWriter(path, append = true) pw => newEntries.foreach(pw.println); appendBaseIndex = entries.length
+      withWriter(path, append = true) { pw => newEntries.foreach(pw.println) }
+      appendBaseIndex = entries.length
     }
   }
 
   // Helpers --------------------------------------------------------------------------
   private def withWriter(path: String, append: Boolean)(f: PrintWriter => Unit): Unit = {
     try {
-      val pw = new PrintWriter(new FileOutputStream(new File), append)
+      val pw = new PrintWriter(new FileOutputStream(new File(path), append))
       try f(pw) finally pw.close()
     } catch {
       case e: Exception => System.err.println(s"history: $path: ${e.getMessage}")

@@ -1,6 +1,4 @@
-package codecrafters_shell
-package lib
-package shell
+package codecrafters_shell.lib
 
 import java.io.{File, FileOutputStream, PrintStream}
 
