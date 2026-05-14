@@ -38,21 +38,29 @@ object Builtins {
 
   // `cd` -----------------------------------------------------------------------------
   private def runCd(args: List[String], out: PrintStream, errOut: PrintStream): Int = {
-    val target = args.headOption match {
-      case None | Some("~") => Option(System.getenv("HOME")).getOrElse {
-        errOut.println("cd: HOME environment variable not set")
-        return 1
-      }
-      case Some(path) => path
+    // Determine the target path, expanding `~` to HOME when necessary.
+    val maybeTarget: Either[String, String] = args.headOption match {
+      case None | Some("~") => Option(System.getenv("HOME")).toRight("cd: HOME environment variable not set")
+      case Some(path)        => Right(path)
     }
 
-    val dir = new File(target)
-    if (!dir.exists()) {
-      errOut.println(s"cd: $target: No such file or directory")
-      return 1
-    } else {
-      System.setProperty("user.dir", dir.getCanonicalPath)
-      0
+    maybeTarget match {
+      case Left(err) => errOut.println(err); 1
+      case Right(target) =>
+        // Resolve relative paths against the shell's current `user.dir` property
+        val cwd = System.getProperty("user.dir")
+        val dir = {
+          val f = new File(target)
+          if (f.isAbsolute) f else new File(cwd, target)
+        }
+
+        if (!dir.exists()) {
+          errOut.println(s"cd: $target: No such file or directory")
+          1
+        } else {
+          System.setProperty("user.dir", dir.getCanonicalPath)
+          0
+        }
     }
   }
 
