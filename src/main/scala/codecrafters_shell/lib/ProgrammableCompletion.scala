@@ -102,7 +102,8 @@ object ProgrammableCompletion {
   case class ExternalCompleter(scriptPath: String) extends Completer {
     override def complete(cmd: String, args: List[String], prefix: String, fullLine: String, cursor: Int): List[String] = {
       try {
-        val pbArgsList = scriptPath :: cmd :: prefix :: args
+        // Pass command, full line and cursor, then prefix and remaining args
+        val pbArgsList = scriptPath :: cmd :: fullLine :: cursor.toString :: prefix :: args
         val pbArgs = pbArgsList.toArray
         val pb = new ProcessBuilder(pbArgs*)
         // Provide completion environment

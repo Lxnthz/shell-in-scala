@@ -4,7 +4,7 @@
 
 ---
 
-# Build Your Own Shell (Scala)
+# Build Your Own Shell (Scala) WIP
 
 This project is a deep-dive into systems programming where I built a fully functional, custom command-line interpreter entirely in Scala. By implementing a Read-Eval-Print Loop (REPL) from the ground up, I created a program capable of managing the entire lifecycle of user commands, from initial parsing and process spawning to handling complex input/output streams. The project transitions from basic command execution to advanced terminal features, mimicking the behavior of industry-standard shells like Bash and ZSH.
 
