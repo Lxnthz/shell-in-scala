@@ -40,7 +40,7 @@ object ProgrammableCompletion {
 
   case object FilesCompleter extends Completer {
     private def listInDir(dir: File, base: String, prefix: String): List[String] = {
-      val files = Option(dir.list()).getOrElse(Array.empty)
+      val files = Option(dir.list()).getOrElse(Array.empty[String])
       files.filter(_.startsWith(prefix)).map { f =>
         val ff = new File(dir, f)
         base + f + (if (ff.isDirectory) "/" else "")
