@@ -49,15 +49,34 @@ object Main {
     System.out.print(prompt); System.out.flush()
     val sb = new StringBuilder
     val in = System.in
+    var lastTabCandidates: List[String] = Nil
+    var lastTabPrefix: String = ""
+    var lastWasTab: Boolean = false
 
     def completePrefix(): Unit = {
       val lastSpace = sb.lastIndexWhere(_.isWhitespace)
       val prefix = if (lastSpace == -1) sb.toString() else sb.substring(lastSpace + 1)
-      val candidates = completionCandidates(prefix)
+      val candidates = Completion.candidates(prefix)
+
+      // If the previous key was a Tab and the prefix hasn't changed, show the list
+      if (lastWasTab && lastTabCandidates.nonEmpty && lastTabPrefix == prefix) {
+        System.out.println()
+        System.out.println(Completion.formatCandidates(lastTabCandidates))
+        System.out.print(prompt + sb.toString())
+        System.out.flush()
+        lastTabCandidates = Nil
+        lastTabPrefix = ""
+        lastWasTab = false
+        return
+      }
+
       if (candidates.isEmpty) {
         // No completions: ring the terminal bell
         System.out.print("\u0007")
         System.out.flush()
+        lastTabCandidates = Nil
+        lastTabPrefix = ""
+        lastWasTab = true
       } else if (candidates.size == 1) {
         val completion = candidates.head
         val rest = completion.substring(prefix.length)
@@ -65,23 +84,26 @@ object Main {
         sb.append(' ')
         System.out.print(rest + " ")
         System.out.flush()
+        lastTabCandidates = Nil
+        lastTabPrefix = ""
+        lastWasTab = false
       } else {
         // Multiple candidates: try to complete to their longest common prefix
-        val lcp = candidates.reduceLeft { (a, b) =>
-          val lim = math.min(a.length, b.length)
-          var i = 0
-          while (i < lim && a.charAt(i) == b.charAt(i)) i += 1
-          a.substring(0, i)
-        }
+        val lcp = Completion.longestCommonPrefix(candidates)
         if (lcp.length > prefix.length) {
           val rest = lcp.substring(prefix.length)
           sb.append(rest)
           System.out.print(rest)
           System.out.flush()
+        } else {
+          // No extension possible: ring bell
+          System.out.print("\u0007")
+          System.out.flush()
         }
-        // Multiple matches remain: ring the bell to indicate ambiguity
-        System.out.print("\u0007")
-        System.out.flush()
+        // Remember this Tab state so a following Tab can list options
+        lastTabCandidates = candidates
+        lastTabPrefix = lcp
+        lastWasTab = true
       }
     }
 
@@ -99,12 +121,19 @@ object Main {
       if (r == -1) return null
       r match {
         case 10 | 13 => System.out.println(); return sb.toString()
-        case 8 | 127 => handleBackspace()
-        case 9 => completePrefix() // Tab key
+        case 8 | 127 =>
+          handleBackspace()
+          lastWasTab = false
+          lastTabCandidates = Nil
+        case 9 =>
+          completePrefix() // Tab key
+        
         case c =>
           sb.append(c.toChar)
           System.out.print(c.toChar)
           System.out.flush()
+          lastWasTab = false
+          lastTabCandidates = Nil
       }
     }
     ""

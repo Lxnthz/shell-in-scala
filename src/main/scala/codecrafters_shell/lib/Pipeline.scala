@@ -1,5 +1,4 @@
-package codecrafters_shell
-package lib
+package codecrafters_shell.lib
 
 import java.io._
 import java.lang.ProcessBuilder.Redirect
