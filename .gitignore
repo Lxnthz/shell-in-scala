@@ -15,3 +15,4 @@ target/
 # ignore vim backup files
 *.sw[op]
 .DS_Store
+docs.md

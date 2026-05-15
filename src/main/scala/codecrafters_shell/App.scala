@@ -54,9 +54,11 @@ object Main {
     var lastWasTab: Boolean = false
 
     def completePrefix(): Unit = {
-      val lastSpace = sb.lastIndexWhere(_.isWhitespace)
-      val prefix = if (lastSpace == -1) sb.toString() else sb.substring(lastSpace + 1)
-      val candidates = Completion.candidates(prefix, lastSpace != -1)
+      val sbStr = sb.toString()
+      val lastSpace = sbStr.lastIndexWhere(_.isWhitespace)
+      val prefix = if (lastSpace == -1) sbStr else sbStr.substring(lastSpace + 1)
+      val tokensBefore = if (lastSpace == -1) Nil else sbStr.substring(0, lastSpace).trim.split("\\s+").filter(_.nonEmpty).toList
+      val candidates = Completion.candidates(prefix, lastSpace != -1, tokensBefore)
 
       // If the previous key was a Tab and the prefix hasn't changed, show the list
       if (lastWasTab && lastTabCandidates.nonEmpty && lastTabPrefix == prefix) {

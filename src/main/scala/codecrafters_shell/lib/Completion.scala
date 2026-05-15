@@ -5,8 +5,18 @@ import java.io.File
 object Completion {
   private val sep = File.separatorChar
 
-  def candidates(prefix: String, argContext: Boolean = false): List[String] = {
+  def candidates(prefix: String, argContext: Boolean = false, tokensBefore: List[String] = Nil): List[String] = {
     val results = scala.collection.mutable.LinkedHashSet[String]()
+
+    // If this is argument completion and a programmable completer exists for the command, delegate
+    if (argContext && tokensBefore.nonEmpty) {
+      val cmd = tokensBefore.head
+      ProgrammableCompletion.get(cmd) match {
+        case Some(completer) =>
+          return completer.complete(cmd, tokensBefore.tail, prefix).sorted
+        case None => // fallthrough to default filename/path behavior
+      }
+    }
 
     // If the user typed a path component (contains '/'), complete within that directory
     val lastSep = prefix.lastIndexOf('/')

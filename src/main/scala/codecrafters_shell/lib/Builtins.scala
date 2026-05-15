@@ -4,7 +4,7 @@ import java.io.{File, PrintStream}
 import java.nio.file.{Files, Paths}
 
 object Builtins {
-  val names: Set[String] = Set("cd", "echo", "exit", "pwd", "history", "type")
+  val names: Set[String] = Set("cd", "echo", "exit", "pwd", "history", "type", "complete")
 
   def run(
     args:     List[String], 
@@ -19,6 +19,7 @@ object Builtins {
       case "exit"     :: rest     => Some(runExit(rest))
       case "history"  :: rest     => Some(runHistory(rest, out, errOut))
       case "type"     :: rest     => Some(runType(rest, out, errOut))
+      case "complete" :: rest     => Some(runComplete(rest, out, errOut))
       case _                      => None
     }
   }
@@ -135,6 +136,43 @@ object Builtins {
         val f = new File(dir, cmd)
         f.exists() && f.canExecute
       } => new File(dir, cmd).getPath
+    }
+  }
+
+  // `complete` ----------------------------------------------------------------------
+  private def runComplete(args: List[String], out: PrintStream, errOut: PrintStream): Int = {
+    args match {
+      case Nil =>
+        errOut.println("complete: missing subcommand (register|unregister|list|show)")
+        1
+      case "list" :: Nil =>
+        val regs = ProgrammableCompletion.listRegistered()
+        if (regs.isEmpty) out.println("(no completions registered)")
+        else regs.toList.sortBy(_._1).foreach { case (k, v) => out.println(s"$k -> $v") }
+        0
+      case "show" :: cmd :: Nil =>
+        ProgrammableCompletion.get(cmd) match {
+          case Some(c) => out.println(s"$cmd -> ${c.specString}"); 0
+          case None    => errOut.println(s"No completion spec registered for '$cmd'"); 1
+        }
+      case "register" :: cmd :: spec :: rest =>
+        val params = rest
+        val specStr = spec
+        ProgrammableCompletion.buildCompleterFromSpec(specStr, params) match {
+          case Right(comp) =>
+            ProgrammableCompletion.register(cmd, comp)
+            out.println(s"Registered completer for '$cmd'")
+            0
+          case Left(err) => errOut.println(s"complete register: $err"); 1
+        }
+      case "unregister" :: cmd :: Nil =>
+        ProgrammableCompletion.unregister(cmd) match {
+          case Some(_) => out.println(s"Unregistered completer for '$cmd'"); 0
+          case None    => errOut.println(s"No completer registered for '$cmd'"); 1
+        }
+      case other =>
+        errOut.println(s"complete: unknown arguments: ${other.mkString(" ")}")
+        1
     }
   }
 }
