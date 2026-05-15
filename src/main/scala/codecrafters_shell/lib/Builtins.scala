@@ -152,6 +152,18 @@ object Builtins {
         0
       case "-p" :: cmd :: Nil =>
         ProgrammableCompletion.get(cmd) match {
+          case Some(ProgrammableCompletion.ExternalCompleter(path)) =>
+            out.println(s"complete -C '$path' $cmd"); 0
+          case Some(ProgrammableCompletion.StaticCompleter(items)) =>
+            out.println(s"complete register $cmd static:${items.mkString(",")}"); 0
+          case Some(ProgrammableCompletion.FilesCompleter) =>
+            out.println(s"complete register $cmd files"); 0
+          case Some(ProgrammableCompletion.PathCompleter) =>
+            out.println(s"complete register $cmd path"); 0
+          case Some(ProgrammableCompletion.GitCompleter) =>
+            out.println(s"complete register $cmd git"); 0
+          case Some(ProgrammableCompletion.EnvCompleter(varName)) =>
+            out.println(s"complete register $cmd env:$varName"); 0
           case Some(c) => out.println(s"complete: $cmd: ${c.specString}"); 0
           case None    => out.println(s"complete: $cmd: no completion specification"); 0
         }
