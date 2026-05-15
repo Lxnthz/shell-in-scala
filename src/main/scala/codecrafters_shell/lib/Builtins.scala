@@ -155,6 +155,13 @@ object Builtins {
           case Some(c) => out.println(s"complete: $cmd: ${c.specString}"); 0
           case None    => out.println(s"complete: $cmd: no completion specification"); 0
         }
+      case "-C" :: file :: cmd :: Nil =>
+        // Register an external completer backed by the specified file. Silent on success.
+        try {
+          val comp = ProgrammableCompletion.ExternalCompleter(file)
+          ProgrammableCompletion.register(cmd, comp)
+          0
+        } catch { case _: Throwable => errOut.println(s"complete: failed to register $file for $cmd"); 1 }
       case "show" :: cmd :: Nil =>
         ProgrammableCompletion.get(cmd) match {
           case Some(c) => out.println(s"$cmd -> ${c.specString}"); 0

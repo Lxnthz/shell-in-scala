@@ -99,6 +99,22 @@ object ProgrammableCompletion {
     override def specString: String = s"env:$varName"
   }
 
+  case class ExternalCompleter(scriptPath: String) extends Completer {
+    override def complete(cmd: String, args: List[String], prefix: String): List[String] = {
+      try {
+        val pbArgs = (scriptPath :: (cmd :: args) :+ prefix).toArray
+        val pb = new ProcessBuilder(pbArgs: _*)
+        pb.redirectErrorStream(true)
+        val proc = pb.start()
+        val src = scala.io.Source.fromInputStream(proc.getInputStream)
+        val lines = try src.getLines().toList finally src.close()
+        proc.waitFor()
+        lines.filter(_.nonEmpty)
+      } catch { case _: Throwable => Nil }
+    }
+    override def specString: String = scriptPath
+  }
+
   // Factory for common specs
   def buildCompleterFromSpec(spec: String, params: List[String]): Either[String, Completer] = {
     if (spec == "files") Right(FilesCompleter)
