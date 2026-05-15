@@ -150,6 +150,11 @@ object Builtins {
         if (regs.isEmpty) out.println("(no completions registered)")
         else regs.toList.sortBy(_._1).foreach { case (k, v) => out.println(s"$k -> $v") }
         0
+      case "-p" :: cmd :: Nil =>
+        ProgrammableCompletion.get(cmd) match {
+          case Some(c) => out.println(s"complete: $cmd: ${c.specString}"); 0
+          case None    => out.println(s"complete: $cmd: no completion specification"); 0
+        }
       case "show" :: cmd :: Nil =>
         ProgrammableCompletion.get(cmd) match {
           case Some(c) => out.println(s"$cmd -> ${c.specString}"); 0
