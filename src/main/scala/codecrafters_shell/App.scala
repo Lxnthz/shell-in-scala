@@ -65,6 +65,23 @@ object Main {
         sb.append(' ')
         System.out.print(rest + " ")
         System.out.flush()
+      } else {
+        // Multiple candidates: try to complete to their longest common prefix
+        val lcp = candidates.reduceLeft { (a, b) =>
+          val lim = math.min(a.length, b.length)
+          var i = 0
+          while (i < lim && a.charAt(i) == b.charAt(i)) i += 1
+          a.substring(0, i)
+        }
+        if (lcp.length > prefix.length) {
+          val rest = lcp.substring(prefix.length)
+          sb.append(rest)
+          System.out.print(rest)
+          System.out.flush()
+        }
+        // Multiple matches remain: ring the bell to indicate ambiguity
+        System.out.print("\u0007")
+        System.out.flush()
       }
     }
 
