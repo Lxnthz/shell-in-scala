@@ -1,34 +1,125 @@
 [![progress-banner](https://backend.codecrafters.io/progress/shell/8f746a54-6b71-4b13-acf4-da97bc9c39d2)](https://app.codecrafters.io/users/Lxnthz?r=2qF)
 
-This is a starting point for Scala solutions to the
 ["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
 
-In this challenge, you'll build your own POSIX compliant shell that's capable of
-interpreting shell commands, running external programs and builtin commands like
-cd, pwd, echo and more. Along the way, you'll learn about shell command parsing,
-REPLs, builtin commands, and more.
+---
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+# Build Your Own Shell (JavaScript)
 
-# Passing the first stage
+This project is a deep-dive into systems programming where I built a fully functional, custom command-line interpreter entirely in Rust. By implementing a Read-Eval-Print Loop (REPL) from the ground up, I created a program capable of managing the entire lifecycle of user commands, from initial parsing and process spawning to handling complex input/output streams. The project transitions from basic command execution to advanced terminal features, mimicking the behavior of industry-standard shells like Bash and ZSH.
 
-The entry point for your `shell` implementation is in
-`src/main/scala/codecrafters_shell/App.scala`. Study and uncomment the relevant
-code, then run the command below to execute the tests on our servers:
+---
 
-```sh
-codecrafters submit
-```
+**Core Features and Functionalities:**
 
-Time to move on to the next stage!
+**Basics:**
 
-# Stage 2 & beyond
+- Print a prompt
+- Handle invalid commands
+- Implement a REPL
+- Implement exit
+- Implement echo
+- Implement type
+- Locate executable files
+- Run a program
 
-Note: This section is for stages 2 and beyond.
+**Navigation:**
 
-1. Ensure you have `scala-cli` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `src/main/scala/codecrafters_shell/App.scala`.
-1. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
-   output will be streamed to your terminal.
+- The pwd builtin
+- The cd builtin: Absolute paths
+- The cd builtin: Relative paths
+- The cd builtin: Home direct
+
+**Quoting:**
+
+- Single quotes
+- Double quotes
+- Backslash outside quotes
+- Backslash within a single quotes
+- Backslash within a double quotes
+- Executing a quoted executable
+
+**Redirection:**
+
+- Redirect stdout
+- Redirect stderr
+- Append stdout
+- Appedn stderr
+
+**Command Completion:**
+
+- Builtin completion
+- Completion with arguments
+- Missing completions
+- Executable completions
+- Multiple completions
+- Partial completions
+
+**Filename Completion:**
+
+- File completion
+- Nested file completion
+- Directory completion
+- Missing completions
+- Multiple matches
+- Partial completions
+- Multi-argument completions
+
+**Programmable Completion:**
+
+- Register complete builtin
+- Printing missing specifications
+- Displaying registered specifications
+- Single completion
+- Handling no completions
+- Passing command-line arguments
+- Passing environment variables
+- Multiple completer candidates
+- Longest common prefix
+- Unregister a completion
+
+**Background Jobs:**
+
+- The jobs builtin
+- Starting background jobs
+- Printing background job output
+- List a single job
+- List multiple jobs
+- Reap one job
+- Reap multiple jobs
+- Reap before the next prompt
+- Recycle job numbers
+
+**Pipeline:**
+
+- Dual-command pipeline
+- Pipelines with built-ins
+- Multi-command pipelines
+
+**History:**
+
+- The history builtin
+- Listing history
+- Limiting history entires
+- Up-arrow navigation
+- Down-arrow navigation
+- Executing commands from history
+
+**History Persistence:**
+
+- Read history from file
+- Write history to file
+- Append history to file
+- Read history on startup
+- Write history on exit
+- Append history on exit
+
+**Parameter Expansion:**
+
+- The declare builtin
+- Printing missing variables
+- Storing shell variables
+- Validating variable names
+- Expanding variables
+- Expansion with braces
+- Expanding empty variables

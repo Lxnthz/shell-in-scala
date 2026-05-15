@@ -81,8 +81,12 @@ object Main {
         val completion = candidates.head
         val rest = completion.substring(prefix.length)
         sb.append(rest)
-        sb.append(' ')
-        System.out.print(rest + " ")
+        System.out.print(rest)
+        // If completion is a directory (ends with '/'), don't append a space
+        if (!completion.endsWith("/")) {
+          sb.append(' ')
+          System.out.print(" ")
+        }
         System.out.flush()
         lastTabCandidates = Nil
         lastTabPrefix = ""
@@ -102,7 +106,7 @@ object Main {
         }
         // Remember this Tab state so a following Tab can list options
         lastTabCandidates = candidates
-        lastTabPrefix = lcp
+        lastTabPrefix = prefix
         lastWasTab = true
       }
     }
@@ -139,37 +143,7 @@ object Main {
     ""
   }
 
-  private def completionCandidates(prefix: String): List[String] = {
-    val results = scala.collection.mutable.LinkedHashSet[String]()
-
-    // Builtin names
-    Builtins.names.foreach { n => if (n.startsWith(prefix)) results += n }
-
-    // Executables on PATH
-    Option(System.getenv("PATH")).getOrElse("").split(File.pathSeparator).foreach { d =>
-      try {
-        val dir = new File(d)
-        if (dir.exists && dir.isDirectory) {
-          val files = dir.list()
-          if (files != null) files.foreach { f =>
-            if (f.startsWith(prefix)) {
-              val ff = new File(dir, f)
-              if (ff.canExecute) results += f
-            }
-          }
-        }
-      } catch { case _: Throwable => () }
-    }
-
-    // Files in current directory
-    try {
-      val cwd = new File(System.getProperty("user.dir"))
-      val files = cwd.list()
-      if (files != null) files.foreach { f => if (f.startsWith(prefix)) results += f }
-    } catch { case _: Throwable => () }
-
-    results.toList.sorted
-  }
+  
 
   private def dispatch(input: String): Unit = {
     // 1. Pipe chain?

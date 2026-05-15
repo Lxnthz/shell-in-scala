@@ -3,13 +3,36 @@ package codecrafters_shell.lib
 import java.io.File
 
 object Completion {
+  private val sep = File.separatorChar
+
   def candidates(prefix: String): List[String] = {
     val results = scala.collection.mutable.LinkedHashSet[String]()
 
-    // Builtin names
+    // If the user typed a path component (contains '/'), complete within that directory
+    val lastSep = prefix.lastIndexOf('/')
+    if (lastSep >= 0) {
+      val dirPart = prefix.substring(0, lastSep + 1) // keeps trailing '/'
+      val base = prefix.substring(lastSep + 1)
+      val dirFile = if (dirPart.startsWith("/")) new File(dirPart) else new File(System.getProperty("user.dir"), dirPart)
+      try {
+        if (dirFile.exists && dirFile.isDirectory) {
+          val files = dirFile.list()
+          if (files != null) files.foreach { f =>
+            if (f.startsWith(base)) {
+              val ff = new File(dirFile, f)
+              val candidate = dirPart + f + (if (ff.isDirectory) "/" else "")
+              results += candidate
+            }
+          }
+        }
+      } catch { case _: Throwable => () }
+
+      return results.toList.sorted
+    }
+
+    // Otherwise include builtins, PATH executables, and files in cwd
     Builtins.names.foreach { n => if (n.startsWith(prefix)) results += n }
 
-    // Executables on PATH
     Option(System.getenv("PATH")).getOrElse("").split(File.pathSeparator).foreach { d =>
       try {
         val dir = new File(d)
@@ -25,11 +48,15 @@ object Completion {
       } catch { case _: Throwable => () }
     }
 
-    // Files in current directory
     try {
       val cwd = new File(System.getProperty("user.dir"))
       val files = cwd.list()
-      if (files != null) files.foreach { f => if (f.startsWith(prefix)) results += f }
+      if (files != null) files.foreach { f =>
+        if (f.startsWith(prefix)) {
+          val ff = new File(cwd, f)
+          results += (f + (if (ff.isDirectory) "/" else ""))
+        }
+      }
     } catch { case _: Throwable => () }
 
     results.toList.sorted
