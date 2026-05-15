@@ -54,7 +54,11 @@ object Main {
       val lastSpace = sb.lastIndexWhere(_.isWhitespace)
       val prefix = if (lastSpace == -1) sb.toString() else sb.substring(lastSpace + 1)
       val candidates = completionCandidates(prefix)
-      if (candidates.size == 1) {
+      if (candidates.isEmpty) {
+        // No completions: ring the terminal bell
+        System.out.print("\u0007")
+        System.out.flush()
+      } else if (candidates.size == 1) {
         val completion = candidates.head
         val rest = completion.substring(prefix.length)
         sb.append(rest)
