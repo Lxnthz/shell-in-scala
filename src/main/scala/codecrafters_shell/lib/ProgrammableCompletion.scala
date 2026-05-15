@@ -102,7 +102,7 @@ object ProgrammableCompletion {
   case class ExternalCompleter(scriptPath: String) extends Completer {
     override def complete(cmd: String, args: List[String], prefix: String): List[String] = {
       try {
-        val pbArgsList = scriptPath :: cmd :: (args :+ prefix)
+        val pbArgsList = scriptPath :: cmd :: prefix :: args
         val pbArgs = pbArgsList.toArray
         val pb = new ProcessBuilder(pbArgs*)
         pb.redirectErrorStream(true)
