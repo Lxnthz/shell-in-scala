@@ -4,7 +4,7 @@ package lib
 import java.io.{BufferedReader, InputStreamReader, File}
 
 object Main {
-  private val Prompt = "$ "
+  private val Prompt = "$ "  
 
   // Enable raw terminal mode so we can read keypresses (Tab, Backspace)
   private def execStty(args: String): Unit = {
@@ -56,7 +56,7 @@ object Main {
     def completePrefix(): Unit = {
       val lastSpace = sb.lastIndexWhere(_.isWhitespace)
       val prefix = if (lastSpace == -1) sb.toString() else sb.substring(lastSpace + 1)
-      val candidates = Completion.candidates(prefix)
+      val candidates = Completion.candidates(prefix, lastSpace != -1)
 
       // If the previous key was a Tab and the prefix hasn't changed, show the list
       if (lastWasTab && lastTabCandidates.nonEmpty && lastTabPrefix == prefix) {
@@ -142,8 +142,6 @@ object Main {
     }
     ""
   }
-
-  
 
   private def dispatch(input: String): Unit = {
     // 1. Pipe chain?

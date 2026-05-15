@@ -5,7 +5,7 @@ import java.io.File
 object Completion {
   private val sep = File.separatorChar
 
-  def candidates(prefix: String): List[String] = {
+  def candidates(prefix: String, argContext: Boolean = false): List[String] = {
     val results = scala.collection.mutable.LinkedHashSet[String]()
 
     // If the user typed a path component (contains '/'), complete within that directory
@@ -30,22 +30,24 @@ object Completion {
       return results.toList.sorted
     }
 
-    // Otherwise include builtins, PATH executables, and files in cwd
-    Builtins.names.foreach { n => if (n.startsWith(prefix)) results += n }
+    // If completing an argument (after a space), only complete filenames/directories
+    if (!argContext) {
+      Builtins.names.foreach { n => if (n.startsWith(prefix)) results += n }
 
-    Option(System.getenv("PATH")).getOrElse("").split(File.pathSeparator).foreach { d =>
-      try {
-        val dir = new File(d)
-        if (dir.exists && dir.isDirectory) {
-          val files = dir.list()
-          if (files != null) files.foreach { f =>
-            if (f.startsWith(prefix)) {
-              val ff = new File(dir, f)
-              if (ff.canExecute) results += f
+      Option(System.getenv("PATH")).getOrElse("").split(File.pathSeparator).foreach { d =>
+        try {
+          val dir = new File(d)
+          if (dir.exists && dir.isDirectory) {
+            val files = dir.list()
+            if (files != null) files.foreach { f =>
+              if (f.startsWith(prefix)) {
+                val ff = new File(dir, f)
+                if (ff.canExecute) results += f
+              }
             }
           }
-        }
-      } catch { case _: Throwable => () }
+        } catch { case _: Throwable => () }
+      }
     }
 
     try {
