@@ -58,7 +58,7 @@ object Main {
       val lastSpace = sbStr.lastIndexWhere(_.isWhitespace)
       val prefix = if (lastSpace == -1) sbStr else sbStr.substring(lastSpace + 1)
       val tokensBefore = if (lastSpace == -1) Nil else sbStr.substring(0, lastSpace).trim.split("\\s+").filter(_.nonEmpty).toList
-      val candidates = Completion.candidates(prefix, lastSpace != -1, tokensBefore)
+      val candidates = Completion.candidates(prefix, lastSpace != -1, tokensBefore, sbStr, sbStr.length)
 
       // If the previous key was a Tab and the prefix hasn't changed, show the list
       if (lastWasTab && lastTabCandidates.nonEmpty && lastTabPrefix == prefix) {

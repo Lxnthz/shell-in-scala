@@ -5,7 +5,7 @@ import java.io.File
 object Completion {
   private val sep = File.separatorChar
 
-  def candidates(prefix: String, argContext: Boolean = false, tokensBefore: List[String] = Nil): List[String] = {
+  def candidates(prefix: String, argContext: Boolean = false, tokensBefore: List[String] = Nil, fullLine: String = "", cursor: Int = 0): List[String] = {
     val results = scala.collection.mutable.LinkedHashSet[String]()
 
     // If this is argument completion and a programmable completer exists for the command, delegate
@@ -13,7 +13,7 @@ object Completion {
       val cmd = tokensBefore.head
       ProgrammableCompletion.get(cmd) match {
         case Some(completer) =>
-          return completer.complete(cmd, tokensBefore.tail, prefix).sorted
+          return completer.complete(cmd, tokensBefore.tail, prefix, fullLine, cursor).sorted
         case None => // fallthrough to default filename/path behavior
       }
     }

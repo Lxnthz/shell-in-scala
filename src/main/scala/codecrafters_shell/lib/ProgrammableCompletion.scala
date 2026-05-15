@@ -9,7 +9,7 @@ import java.io.File
  */
 object ProgrammableCompletion {
   trait Completer {
-    def complete(cmd: String, args: List[String], prefix: String): List[String]
+    def complete(cmd: String, args: List[String], prefix: String, fullLine: String, cursor: Int): List[String]
     def specString: String
   }
 
@@ -22,7 +22,7 @@ object ProgrammableCompletion {
 
   // ---- Builtin completers ----
   case class StaticCompleter(items: List[String]) extends Completer {
-    override def complete(cmd: String, args: List[String], prefix: String): List[String] =
+    override def complete(cmd: String, args: List[String], prefix: String, fullLine: String, cursor: Int): List[String] =
       items.filter(_.startsWith(prefix)).sorted
     override def specString: String = s"static(${items.mkString(",")})"
   }
@@ -33,7 +33,7 @@ object ProgrammableCompletion {
       "fetch", "grep", "init", "log", "merge", "mv", "pull", "push",
       "rebase", "remote", "reset", "show", "status", "tag"
     )
-    override def complete(cmd: String, args: List[String], prefix: String): List[String] =
+    override def complete(cmd: String, args: List[String], prefix: String, fullLine: String, cursor: Int): List[String] =
       cmds.filter(_.startsWith(prefix)).sorted
     override def specString: String = "git"
   }
@@ -47,7 +47,7 @@ object ProgrammableCompletion {
       }.toList.sorted
     }
 
-    override def complete(cmd: String, args: List[String], prefix: String): List[String] = {
+    override def complete(cmd: String, args: List[String], prefix: String, fullLine: String, cursor: Int): List[String] = {
       // Handle nested paths like dir/sub/
       val lastSep = prefix.lastIndexOf('/')
       if (lastSep >= 0) {
@@ -67,7 +67,7 @@ object ProgrammableCompletion {
   }
 
   case object PathCompleter extends Completer {
-    override def complete(cmd: String, args: List[String], prefix: String): List[String] = {
+    override def complete(cmd: String, args: List[String], prefix: String, fullLine: String, cursor: Int): List[String] = {
       val results = scala.collection.mutable.LinkedHashSet[String]()
       Option(System.getenv("PATH")).getOrElse("").split(File.pathSeparator).foreach { d =>
         try {
@@ -89,7 +89,7 @@ object ProgrammableCompletion {
   }
 
   case class EnvCompleter(varName: String) extends Completer {
-    override def complete(cmd: String, args: List[String], prefix: String): List[String] = {
+    override def complete(cmd: String, args: List[String], prefix: String, fullLine: String, cursor: Int): List[String] = {
       val v = Option(System.getenv(varName)).getOrElse("")
       if (v.isEmpty) Nil
       else {
@@ -100,11 +100,15 @@ object ProgrammableCompletion {
   }
 
   case class ExternalCompleter(scriptPath: String) extends Completer {
-    override def complete(cmd: String, args: List[String], prefix: String): List[String] = {
+    override def complete(cmd: String, args: List[String], prefix: String, fullLine: String, cursor: Int): List[String] = {
       try {
         val pbArgsList = scriptPath :: cmd :: prefix :: args
         val pbArgs = pbArgsList.toArray
         val pb = new ProcessBuilder(pbArgs*)
+        // Provide completion environment
+        val env = pb.environment()
+        env.put("COMP_LINE", fullLine)
+        env.put("COMP_POINT", cursor.toString)
         pb.redirectErrorStream(true)
         val proc = pb.start()
         val src = scala.io.Source.fromInputStream(proc.getInputStream)
